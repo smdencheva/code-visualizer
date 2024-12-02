@@ -1,15 +1,17 @@
 import React, { FC, useState } from 'react';
 
-interface TextAreaProps {
+
+
+interface CodeInputProps {
   label: string;
   placeholder?: string;
   value?: string;
-  onChange?: (value: string) => void;
+  onChange?: (value: string) => void; // Expects only the value
   rows?: number;
   cols?: number;
 }
 
-const TextArea: FC<TextAreaProps> = ({
+const CodeInput: FC<CodeInputProps> = ({
   label,
   placeholder = 'Enter text...',
   value = '',
@@ -22,7 +24,7 @@ const TextArea: FC<TextAreaProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setText(newValue);
-    if (onChange) onChange(newValue);
+    if (onChange) onChange(newValue); // Pass only the string value
   };
 
   return (
@@ -32,14 +34,13 @@ const TextArea: FC<TextAreaProps> = ({
         <textarea
           placeholder={placeholder}
           value={text}
-          onChange={handleChange}
+          onChange={}
           rows={rows}
           cols={cols}
-          style={{ width: '100%', padding: '8px', fontSize: '16px' }}
         />
       </label>
     </div>
   );
 };
 
-export default TextArea;
+export default CodeInput;
