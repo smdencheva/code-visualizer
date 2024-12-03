@@ -1,106 +1,111 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Accordion,
+  AccordionHeader,
+  AccordionBody,
+} from '@material-tailwind/react';
 
 interface LoopData {
   label: string;
   iterator: number; // Initial iterator value
   step: number;
   limit: number;
-  children?: React.ReactNode;
+  children?: LoopData[];
 }
 
 interface LoopComponentProps {
   loopData: LoopData;
   onUpdate: (updatedLoop: LoopData) => void;
-  key?: string;
 }
 
 const LoopComponent: React.FC<LoopComponentProps> = ({
   loopData,
   onUpdate,
-  children,
 }) => {
   const [currentData, setCurrentData] = useState(loopData);
+  const [open, setOpen] = useState(false); // Track accordion state
+  const [showSlider, setShowSlider] = useState(false); // For slider visibility
 
-  // Sync local state with parent updates (when parent state changes)
-  useEffect(() => {
-    setCurrentData(loopData);
-  }, [loopData]);
-
-  // Notify parent only when relevant changes occur
-  useEffect(() => {
-    // Compare current state with the parent state to prevent redundant updates
-    if (
-      currentData.iterator !== loopData.iterator ||
-      currentData.step !== loopData.step ||
-      currentData.limit !== loopData.limit
-    ) {
-      onUpdate(currentData);
-    }
-  }, [currentData.iterator, currentData.step, currentData.limit]);
-
-  const handleNext = () => {
-    if (currentData.iterator + currentData.step <= currentData.limit) {
-      setCurrentData((prev) => ({
-        ...prev,
-        iterator: prev.iterator + prev.step,
-      }));
-    }
+  const handleSliderChange = (value: number) => {
+    setCurrentData((prev) => ({
+      ...prev,
+      iterator: value,
+    }));
   };
 
-  const handlePrevious = () => {
-    if (currentData.iterator - currentData.step >= loopData.iterator) {
-      setCurrentData((prev) => ({
-        ...prev,
-        iterator: prev.iterator - prev.step,
-      }));
-    }
-  };
-
+  const handleAccordionToggle = () => setOpen((prev) => !prev); // Toggle accordion state
+  const toggleSlider = () => setShowSlider((prev) => !prev); // Toggle slider visibility
+  console.log(loopData);
+  console.log(currentData);
   return (
-    <div
-      style={{
-        marginBottom: '20px',
-        paddingLeft: '20px',
-        borderLeft: '2px solid #ccc',
-      }}
+    <Accordion
+      open={open}
+      className="mb-2 rounded-lg border border-blue-gray-100 p-4"
     >
-      <table className="border-collapse border border-slate-400 text-left w-full p-5">
-        <thead>
-          <tr>
-            <th className="border border-slate-300 p-5">Iterator</th>
-            <th className="border border-slate-300 p-5">Step</th>
-            <th className="border border-slate-300 p-5">Limit</th>
-            <th className="border border-slate-300 p-5">Controls</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td className="border border-slate-300 p-5">
-              {currentData.iterator}
-            </td>
-            <td className="border border-slate-300 p-5">{currentData.step}</td>
-            <td className="border border-slate-300 p-5">{currentData.limit}</td>
-            <td className="border border-slate-300 p-5">
-              <button
-                onClick={handlePrevious}
-                disabled={currentData.iterator <= loopData.iterator}
-                className="rounded bg-slate-600 p-2 text-white font-mono mt-2 mr-2"
-              >
-                Previous
-              </button>
-              <button
-                onClick={handleNext}
-                disabled={currentData.iterator >= currentData.limit}
-                className="rounded bg-slate-600 p-2 text-white font-mono mt-2"
-              >
-                Next
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      {children}
-    </div>
+      <AccordionHeader
+        onClick={handleAccordionToggle}
+        className="border-b-0 transition-colors text-blue-500 hover:!text-blue-700"
+      >
+        Loop: {currentData.label}
+      </AccordionHeader>
+      {open && (
+        <AccordionBody className="p-4 text-base font-normal">
+          <span>Iterator: </span>
+          {currentData.iterator}
+          <br />
+          <span>Step: </span>
+          {currentData.step}
+          <br />
+          <span>Limit: </span>
+          {currentData.limit}
+          <br />
+          <button
+            onClick={toggleSlider}
+            className="rounded bg-slate-600 p-2 text-white font-mono mt-2 mr-2"
+          >
+            Adjust Iterator
+          </button>
+          {showSlider && (
+            <input
+              type="range"
+              min={loopData.iterator} // Initial iterator value
+              max={loopData.limit} // Limit value
+              step={loopData.step} // Raw slider step, adjustments are handled manually
+              value={currentData.iterator} // Current iterator value
+              onInput={(e) =>
+                handleSliderChange(parseInt(e.currentTarget.value, 10))
+              } // Update iterator
+              style={{
+                appearance: 'none', // Remove browser styles for better customization
+                width: '100%', // Full width of the container
+                height: '8px', // Thickness of the slider
+                margin: '10px 0', // Vertical spacing
+                background: 'linear-gradient(to right, #ddd, #ccc)', // Gradient for track
+                borderRadius: '5px', // Rounded edges for the track
+                cursor: 'pointer', // Pointer cursor for better UX
+              }}
+            />
+          )}
+          {/* Render nested loops */}
+          {currentData.children &&
+            currentData.children.map((childLoop, index) => (
+              <LoopComponent
+                key={`${childLoop.label}-${index}`}
+                loopData={childLoop}
+                onUpdate={(updatedChild) => {
+                  const updatedChildren = currentData.children!.map(
+                    (child, i) => (i === index ? updatedChild : child),
+                  );
+                  setCurrentData((prev) => ({
+                    ...prev,
+                    children: updatedChildren,
+                  }));
+                }}
+              />
+            ))}
+        </AccordionBody>
+      )}
+    </Accordion>
   );
 };
 

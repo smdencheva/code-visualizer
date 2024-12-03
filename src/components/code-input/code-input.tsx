@@ -90,7 +90,6 @@ const CodeParserInputComponent: React.FC = () => {
     <div style={{ textAlign: 'center', margin: '20px' }}>
       <h1 className="text-center font-bold">Code Parser</h1>
       <textarea
-        value={codeSnippet}
         onChange={(e) => setCodeSnippet(e.target.value)}
         placeholder="Paste or type your for-loop snippet here..."
         style={{ width: '100%', height: '150px', marginBottom: '20px' }}
@@ -108,11 +107,6 @@ const CodeParserInputComponent: React.FC = () => {
             <LoopComponent
               key={`${loop.label}-${index}`} // Use a unique key combining the label and index
               loopData={loop}
-              onUpdate={(updatedLoop) => {
-                const updatedLoops = [...parsedLoops];
-                updatedLoops[index] = updatedLoop;
-                handleUpdateLoops(updatedLoops);
-              }}
             />
           ))}
         </div>
