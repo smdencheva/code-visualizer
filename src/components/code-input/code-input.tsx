@@ -4,9 +4,9 @@ import LoopComponent from '@/components/for-loop/for-loop';
 interface LoopData {
   label: string;
   iterator: number;
-  step: number;
   limit: number;
-  children?: LoopData[];
+  step: number;
+  children: LoopData[];
 }
 
 const CodeParserInputComponent: React.FC = () => {
@@ -14,76 +14,78 @@ const CodeParserInputComponent: React.FC = () => {
   const [parsedLoops, setParsedLoops] = useState<LoopData[] | null>(null);
 
   // Function to parse nested for-loops from code
-  const parseCode = (code: string): LoopData[] => {
+  function parseCode(code: string): LoopData[] {
     const loopRegex =
       /for\s*\(\s*let\s+(\w+)\s*=\s*(\d+)\s*;\s*\1\s*<\s*(\d+)\s*;\s*\1\s*\+=\s*(\d+)\s*\)\s*{/;
 
-    const findMatchingBraces = (code: string, startIndex: number): string => {
-      let openBraces = 0;
+    function extractBalancedBody(
+      code: string,
+      startIndex: number,
+    ): [string, number] {
+      let stack = 0;
       let i = startIndex;
 
-      for (; i < code.length; i++) {
-        if (code[i] === '{') openBraces++;
-        if (code[i] === '}') openBraces--;
-
-        if (openBraces === 0) {
-          return code.substring(startIndex, i + 1); // Return the full body up to the matching closing brace
+      while (i < code.length) {
+        if (code[i] === '{') {
+          stack++;
+        } else if (code[i] === '}') {
+          stack--;
+          if (stack === 0) {
+            return [code.slice(startIndex + 1, i), i + 1];
+          }
         }
+        i++;
       }
 
-      return ''; // If no matching brace is found
-    };
-
-    const loops: LoopData[] = [];
-    let match;
-
-    while ((match = loopRegex.exec(code)) !== null) {
-      const [, label, iterator, limit, step] = match;
-
-      // Find the start of the body
-      const startIndex = match.index + match[0].length;
-      const fullBody = findMatchingBraces(code, startIndex);
-
-      // Recursively parse nested loops
-      const nestedLoops = parseCode(fullBody);
-
-      loops.push({
-        label,
-        iterator: parseInt(iterator, 10),
-        step: parseInt(step, 10),
-        limit: parseInt(limit, 10),
-        children: nestedLoops,
-      });
-
-      // Move to the next loop
-      code = code.substring(startIndex + fullBody.length);
+      throw new Error('Unbalanced brackets in the code.');
     }
 
-    return loops;
-  };
+    function parseLoops(fullCode: string): LoopData[] {
+      const matches: LoopData[] = [];
+      let match;
 
-  // Generate code from loop data
-  const generateCode = (loops: LoopData[]): string => {
-    return loops
-      .map(
-        (loop) =>
-          `for (let ${loop.label} = ${loop.iterator}; ${loop.label} < ${loop.limit}; ${loop.label} += ${loop.step}) {\n${generateCode(
-            loop.children || [],
-          )}\n}`,
-      )
-      .join('\n');
+      while ((match = loopRegex.exec(fullCode)) !== null) {
+        const [, label, iterator, limit, step] = match;
+        const loopStartIndex = match.index + match[0].length - 1;
+
+        // Extract the balanced body for this loop
+        const [body, bodyEndIndex] = extractBalancedBody(
+          fullCode,
+          loopStartIndex,
+        );
+        console.log(body);
+        matches.push({
+          label,
+          iterator: parseInt(iterator, 10),
+          step: parseInt(step, 10),
+          limit: parseInt(limit, 10),
+          children: parseLoops(body), // Recursively parse nested loops
+        });
+
+        // Remove the processed loop from the code
+        fullCode = fullCode.slice(bodyEndIndex);
+      }
+
+      return matches;
+    }
+
+    return parseLoops(code);
+  }
+
+  // Recursive rendering function
+  const renderLoops = (loops: LoopData[]): React.ReactNode => {
+    return loops.map((loop, index) => (
+      <LoopComponent key={index} loopData={loop}>
+        {/* Recursively render children */}
+        {renderLoops(loop.children)}
+      </LoopComponent>
+    ));
   };
 
   // Handle Run Code button
   const handleRunCode = () => {
     const parsed = parseCode(codeSnippet);
     setParsedLoops(parsed);
-  };
-
-  // Handle updates from LoopComponent
-  const handleUpdateLoops = (updatedLoops: LoopData[]) => {
-    setParsedLoops(updatedLoops);
-    setCodeSnippet(generateCode(updatedLoops));
   };
 
   return (
@@ -102,14 +104,7 @@ const CodeParserInputComponent: React.FC = () => {
         Run Code
       </button>
       {parsedLoops && (
-        <div style={{ marginTop: '20px' }}>
-          {parsedLoops.map((loop, index) => (
-            <LoopComponent
-              key={`${loop.label}-${index}`} // Use a unique key combining the label and index
-              loopData={loop}
-            />
-          ))}
-        </div>
+        <div style={{ marginTop: '20px' }}>{renderLoops(parsedLoops)}</div>
       )}
     </div>
   );

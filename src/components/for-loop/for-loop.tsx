@@ -5,19 +5,19 @@ interface LoopData {
   iterator: number; // Initial iterator value
   step: number;
   limit: number;
-  children?: LoopData[];
+  children?: React.ReactNode;
 }
 
 interface LoopComponentProps {
   loopData: LoopData;
   onUpdate: (updatedLoop: LoopData) => void;
-  isNested?: boolean; // Indicates if this is a nested loop
+  key?: string;
 }
 
 const LoopComponent: React.FC<LoopComponentProps> = ({
   loopData,
   onUpdate,
-  isNested = false, // Default is not nested
+  children,
 }) => {
   const [currentData, setCurrentData] = useState(loopData);
   const [showSlider, setShowSlider] = useState(false); // For slider visibility
@@ -121,24 +121,9 @@ const LoopComponent: React.FC<LoopComponentProps> = ({
           </div>
         </div>
       )}
-      {/* Render nested loops */}
-      {currentData.children &&
-        currentData.children.map((childLoop, index) => (
-          <LoopComponent
-            key={`${childLoop.label}-${index}`}
-            loopData={childLoop}
-            isNested={true} // Indicate this is a nested loop
-            onUpdate={(updatedChild) => {
-              const updatedChildren = currentData.children!.map((child, i) =>
-                i === index ? updatedChild : child,
-              );
-              setCurrentData((prev) => ({
-                ...prev,
-                children: updatedChildren,
-              }));
-            }}
-          />
-        ))}
+      {'{'}
+      {children}
+      {'}'}
     </div>
   );
 };
