@@ -1,7 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
 import TaskNavigation from '@/components/task-navigation/TaskNavigation';
-import styles from './tasks.module.css'
 
 
 export default function TasksLayout({ children }: { children: React.ReactNode }) {
@@ -16,8 +15,8 @@ export default function TasksLayout({ children }: { children: React.ReactNode })
           style={{ margin: '20px auto' }}
         />
       </header>
-      <TaskNavigation />
-      <main className={styles.container}>{children}</main>
+      <nav className="container mx-auto bg-slate-100"><TaskNavigation /></nav>
+      <main className="container mx-auto bg-slate-100">{children}</main>
       <footer
         style={{
           backgroundColor: '#282c34',

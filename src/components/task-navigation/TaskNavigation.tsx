@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import React from 'react';
 import styles from './TaskNavigation.module.css';
+import { usePathname } from 'next/navigation';
 
 export interface TaskLink {
   label: string;
@@ -29,16 +30,25 @@ interface TaskNavigationProps {
 }
 
 const TaskNavigation: React.FC<TaskNavigationProps> = ({ links = defaultTaskLinks }) => {
+  const pathname = usePathname();
+
   return (
     <nav className={styles.nav}>
       <ul className={styles.navList}>
-        {links.map((link, idx) => (
-          <li key={idx}>
-            <Link href={link.href} className={styles.navLink}>
-              {link.label}
-            </Link>
-          </li>
-        ))}
+        {links.map((link, idx) => {
+          // Check if the link matches the current path
+          const isActive = pathname === link.href;
+          return (
+            <li key={idx}>
+              <Link
+                href={link.href}
+                className={`${styles.navLink} ${isActive ? styles.active : ''}`}
+              >
+                {link.label}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );
