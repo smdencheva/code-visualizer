@@ -24,7 +24,7 @@ const CodeParserInputComponent: React.FC = () => {
     ): [string, number] {
       let stack = 0;
       let i = startIndex;
-
+      console.log(code);
       while (i < code.length) {
         if (code[i] === '{') {
           stack++;
