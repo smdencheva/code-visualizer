@@ -1,16 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './TaskNavigation.module.css';
 import { usePathname } from 'next/navigation';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+
 
 export interface TaskLink {
   label: string;
   href: string;
 }
 
-// Default task links for all folders under /tasks
 const defaultTaskLinks: TaskLink[] = [
   { label: 'Nested Loops', href: '/tasks/nested-loops' },
   { label: 'Prefix Sum', href: '/tasks/prefix-sum' },
@@ -31,18 +32,26 @@ interface TaskNavigationProps {
 
 const TaskNavigation: React.FC<TaskNavigationProps> = ({ links = defaultTaskLinks }) => {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <nav className={styles.nav}>
-      <ul className={styles.navList}>
+      {/* Hamburger Button */}
+      <button className={styles.hamburger} onClick={() => setMenuOpen(!menuOpen)}>
+        {menuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+      </button>
+
+
+      {/* Navigation List */}
+      <ul className={`${styles.navList} ${menuOpen ? styles.navOpen : ''}`}>
         {links.map((link, idx) => {
-          // Check if the link matches the current path
           const isActive = pathname === link.href;
           return (
             <li key={idx}>
               <Link
                 href={link.href}
                 className={`${styles.navLink} ${isActive ? styles.active : ''}`}
+                onClick={() => setMenuOpen(false)} // Close menu on click
               >
                 {link.label}
               </Link>
