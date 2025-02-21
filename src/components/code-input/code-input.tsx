@@ -15,8 +15,8 @@ const CodeParserInputComponent: React.FC = () => {
 
   // Function to parse nested for-loops from code
   function parseCode(code: string): LoopData[] {
-    const loopRegex =
-      /for\s*\(\s*let\s+(\w+)\s*=\s*(\d+)\s*;\s*\1\s*<\s*(\d+)\s*;\s*\1\s*\+=\s*(\d+)\s*\)\s*{/;
+    const loopRegex = /for\s*\(\s*let\s+(\w+)\s*=\s*(\d+)\s*;\s*\1\s*<\s*(\d+)\s*;\s*(?:(?:\1\s*\+\+)|(?:\+\+\s*\1)|(?:\1\s*\+=\s*(\d+)))\s*\)\s*{/;
+
 
     function extractBalancedBody(
       code: string,
@@ -89,8 +89,8 @@ const CodeParserInputComponent: React.FC = () => {
   };
 
   return (
-    <div style={{ textAlign: 'center', margin: '20px' }}>
-      <h1 className="text-center font-bold">Code Parser</h1>
+    <div>
+      <h1>Code Parser</h1>
       <textarea
         onChange={(e) => setCodeSnippet(e.target.value)}
         placeholder="Paste or type your for-loop snippet here..."
