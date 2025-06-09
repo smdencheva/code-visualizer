@@ -24,6 +24,8 @@ const defaultTaskLinks: TaskLink[] = [
   { label: 'Water Containers', href: '/tasks/water' },
   { label: 'Majority Element', href: '/tasks/majority-element' },
   { label: 'Palindrome', href: '/tasks/palindrome' },
+  { label: 'Sqrt(x)', href: '/tasks/sqrt' },
+  { label: 'Game of Life', href: '/tasks/game-of-life' },
 ];
 
 interface TaskNavigationProps {
